@@ -1,0 +1,27 @@
+
+
+:: 	HOW TO INSTALL THEMES ON OPENSTUDIO 	::
+
+** EXPLORER.EXE **
+1. Unzip "YOUR_THEME.zip"
+
+2. Paste the folder inside
+"Application\Data\Packages"
+
+
+** OpenStudio (ide.exe) **
+3. Run OpenStudio IDE
+
+4. On the menu bar, go to:
+Preferences > Color Scheme
+
+5. Search for the color scheme
+or select one of them
+on the displayed menu.
+
+6. Optional: Restart OpenStudio
+
+
+Gabriel Margarido,
+March 2021.
+

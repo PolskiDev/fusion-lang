@@ -1,0 +1,545 @@
+%YAML 1.2
+---
+file_extensions:
+  - fusion
+scope: source.fusion
+variables:
+  reserved_word: |-
+    (?x:(?:
+      and|break|do|elseif|else|end|false|for|function|goto|if|in|
+      local|nil|not|or|repeat|return|then|true|until|while
+    ){{identifier_break}})
+
+  identifier_start: (?:[A-Za-z_])
+  identifier_char: (?:[A-Za-z0-9_])
+  identifier_break: (?!{{identifier_char}})
+  identifier_raw: (?:{{identifier_start}}{{identifier_char}}*)
+  identifier: (?:(?!{{reserved_word}}){{identifier_raw}})
+
+  function_args_begin: (?:\(|"|'|\[=*\[|\{)
+  function_call_ahead: (?=\s*{{function_args_begin}})
+  function_assignment_ahead: (?=\s*=\s*function{{identifier_break}})
+
+contexts:
+  main:
+    - include: statements
+
+  else-pop:
+    - match: (?=\S)
+      pop: true
+
+  immediately-pop:
+    - match: ''
+      pop: true
+
+  prototype:
+    - match: --\[(=*)\[
+      scope: punctuation.definition.comment.begin.fusion
+      push:
+        - meta_include_prototype: false
+        - meta_scope: comment.block.fusion
+        - match: \]\1\]
+          scope: punctuation.definition.comment.end.fusion
+          pop: true
+    - match: (--).*
+      scope: comment.line.fusion
+      captures:
+        1: punctuation.definition.comment.fusion
+
+  end:
+    - match: end{{identifier_break}}
+      scope: keyword.control.end.fusion
+      pop: true
+
+  block-contents:
+    - meta_scope: meta.block.fusion
+    - include: end
+    - include: statements
+
+  statements:
+    - match: ;
+      scope: punctuation.terminator.statement.fusion
+
+    - match: function{{identifier_break}}
+      scope: storage.type.function.fusion
+      push:
+        - function-meta
+        - block-contents
+        - function-parameter-list
+        - function-name
+
+    - include: control-statements
+
+    - match: break{{identifier_break}}
+      scope: keyword.control.break.fusion
+
+    - match: return{{identifier_break}}
+      scope: keyword.control.return.fusion
+      push: expression-list
+
+
+    - match: String{{identifier_break}}
+      scope: storage.modifier.fusion
+      push: expression-list
+
+    - match: void{{identifier_break}}
+      scope: storage.modifier.fusion
+      push: expression-list
+
+    - match: int{{identifier_break}}
+      scope: storage.modifier.fusion
+
+    - match: float{{identifier_break}}
+      scope: storage.modifier.fusion
+
+    - match: bool{{identifier_break}}
+      scope: storage.modifier.fusion
+
+    - match: Int{{identifier_break}}
+      scope: storage.modifier.fusion
+
+    - match: Float{{identifier_break}}
+      scope: storage.modifier.fusion
+
+    - match: Bool{{identifier_break}}
+      scope: storage.modifier.fusion
+
+
+
+    - match: end{{identifier_break}}
+      scope: invalid.illegal.unexpected-end.fusion
+
+    - match: (?=\S)
+      push: expression
+
+  function-parameter-list:
+    - match: \(
+      scope: punctuation.section.group.begin.fusion
+      set:
+        - meta_scope: meta.group.fusion
+        - match: \)
+          scope: punctuation.section.group.end.fusion
+          pop: true
+        - match: ','
+          scope: punctuation.separator.comma.fusion
+        - match: '{{identifier}}'
+          scope: variable.parameter.function.fusion
+        - match: \.\.\.
+          scope: constant.language.fusion
+    - include: else-pop
+
+  function-name:
+    - match: (?=\S)
+      set: [ function-name-end, function-name-begin ]
+
+  function-name-end:
+    - meta_scope: meta.name.function
+    - match: '[.:]'
+      scope: punctuation.accessor.fusion
+      push: function-name-property
+    - include: else-pop
+
+  function-name-begin:
+    - match: '{{identifier}}(?=\s*[.:])'
+      scope: variable.other.fusion
+      pop: true
+    - match: '{{identifier}}'
+      scope: entity.name.function.fusion
+      pop: true
+    - include: else-pop
+
+  function-name-property:
+    - match: '{{identifier}}(?=\s*[.:])'
+      scope: meta.property.fusion
+      pop: true
+    - match: '{{identifier}}'
+      scope: meta.property.fusion entity.name.function.fusion
+      pop: true
+    - include: else-pop
+
+  control-statements:
+    - match: namespace{{identifier_break}}
+      scope: keyword.control.fusion
+      push: block-contents
+    - match: endnamespace{{identifier_break}}
+      scope: keyword.control.fusion
+      push: block-contents
+
+    - match: new{{identifier_break}}
+      scope: keyword.control.fusion
+      push: block-contents
+
+    - match: import{{identifier_break}}
+      scope: keyword.control.fusion
+      push: block-contents
+  
+    - match: try{{identifier_break}}
+      scope: keyword.control.fusion
+      push: block-contents
+
+    - match: catch{{identifier_break}}
+      scope: keyword.control.fusion
+      push: block-contents
+
+    - match: finally{{identifier_break}}
+      scope: keyword.control.fusion
+      push: block-contents
+
+
+    - match: do{{identifier_break}}
+      scope: keyword.control.fusion
+      push: block-contents
+
+    - match: if{{identifier_break}}
+      scope: keyword.control.conditional.fusion
+      push:
+        - - include: end
+          - match: elseif{{identifier_break}}
+            scope: keyword.control.conditional.fusion
+            push:
+              - if-do
+              - expression
+          - match: else{{identifier_break}}
+            scope: keyword.control.conditional.fusion
+            push: if-block
+
+        - if-do
+        - expression
+
+    - match: while{{identifier_break}}
+      scope: keyword.control.loop.fusion
+      push:
+        - - match: do{{identifier_break}}
+            scope: keyword.control.fusion
+            push: block-contents
+          - include: else-pop
+        - expression
+
+    - match: repeat{{identifier_break}}
+      scope: keyword.control.loop.fusion
+      push:
+        - - match: until{{identifier_break}}
+            scope: keyword.control.loop.fusion
+            set: expression
+        - - meta_scope: meta.block.fusion
+          - match: (?=until{{identifier_break}})
+            pop: true
+          - include: statements
+
+    - match: for{{identifier_break}}
+      scope: keyword.control.loop.fusion
+      push:
+        - - match: do{{identifier_break}}
+            scope: keyword.control.fusion
+            push: block-contents
+          - include: else-pop
+
+        - - match: (?==)
+            set: expression-list-end
+
+          - match: in{{identifier_break}}
+            scope: keyword.control.loop.fusion
+            set: expression-list
+
+          - include: else-pop
+
+        - expression-list
+
+  if-do:
+    - match: do{{identifier_break}}
+      scope: keyword.control.conditional.fusion
+      set: if-block
+    - include: else-pop
+
+  if-block:
+    - meta_scope: meta.block.fusion
+    - match: (?=(?:end|elseif|else){{identifier_break}})
+      pop: true
+    - include: statements
+
+  expression:
+    - match: ''
+      set:
+        - expression-end
+        - expression-begin
+
+  expression-list:
+    - match: ''
+      set:
+        - expression-list-end
+        - expression-begin
+
+  expression-end:
+    - match: (?=;)
+      pop: true
+
+    - match: (?={{function_args_begin}})
+      push:
+        - function-arguments-meta
+        - function-arguments
+
+    - include: infix-operator
+    - include: accessor
+
+    - include: else-pop
+
+  expression-list-end:
+    - match: ','
+      scope: punctuation.separator.comma.fusion
+      push: expression-begin
+    - include: expression-end
+
+  expression-begin:
+    - match: (?=;)
+      pop: true
+
+    - include: prefix-operator
+    - include: builtin
+    - include: support
+    - include: variable
+    - include: number
+    - include: string
+    - include: parenthesized-expression
+    - include: table-constructor
+    - include: function-literal
+
+    - include: else-pop
+
+  infix-operator:
+    - match: (?:[=<>~]=)
+      scope: keyword.operator.comparison.fusion
+      push: expression-begin
+    - match: (?://|[-+*/%^])
+      scope: keyword.operator.arithmetic.fusion
+      push: expression-begin
+    - match: (?:>>|<<|[&|~])
+      scope: keyword.operator.bitwise.fusion
+      push: expression-begin
+    - match: (?:[<>])
+      scope: keyword.operator.comparison.fusion
+      push: expression-begin
+    - match: \.\.
+      scope: keyword.operator.concatenation.fusion
+      push: expression-begin
+    - match: =
+      scope: keyword.operator.assignment.fusion
+      push: expression-begin
+    - match: (?:and|or){{identifier_break}}
+      scope: keyword.operator.logical.fusion
+      push: expression-begin
+
+  accessor:
+    - match: '[.:]'
+      scope: punctuation.accessor.fusion
+      push: property
+
+    - match: \[
+      scope: punctuation.section.brackets.begin.fusion
+      push:
+        - meta_scope: meta.brackets.fusion
+        - match: \]
+          scope: punctuation.section.brackets.end.fusion
+          pop: true
+        - match: (?=\S)
+          push: expression
+
+  property:
+    - match: '{{identifier}}{{function_assignment_ahead}}'
+      scope: meta.property.fusion entity.name.function.fusion
+      pop: true
+    - match: '{{identifier}}{{function_call_ahead}}'
+      scope: meta.property.fusion variable.function.fusion
+      pop: true
+    - match: '{{identifier}}'
+      scope: meta.property.fusion
+      pop: true
+    - include: else-pop
+
+  function-arguments-meta:
+    - meta_scope: meta.function-call.arguments.fusion
+    - include: immediately-pop
+
+  function-arguments:
+    - include: string
+    - include: table-constructor
+
+    - match: \(
+      scope: punctuation.section.group.begin.fusion
+      set:
+        - meta_scope: meta.group.fusion
+        - match: \)
+          scope: punctuation.section.group.end.fusion
+          pop: true
+        - match: (?=\S)
+          push: expression-list
+
+  prefix-operator:
+    - match: '#'
+      scope: keyword.operator.length.fusion
+    - match: \-
+      scope: keyword.operator.arithmetic.fusion
+    - match: \~
+      scope: keyword.operator.bitwise.fusion
+    - match: not{{identifier_break}}
+      scope: keyword.operator.logical.fusion
+
+  builtin:
+    - match: true{{identifier_break}}
+      scope: constant.language.boolean.true.fusion
+      pop: true
+    - match: false{{identifier_break}}
+      scope: constant.language.boolean.true.fusion
+      pop: true
+    - match: nil{{identifier_break}}
+      scope: constant.language.null.fusion
+      pop: true
+    - match: \.\.\.
+      scope: constant.language.fusion
+      pop: true
+    - match: self{{identifier_break}}
+      scope: variable.language.this.fusion
+      pop: true
+
+  support:
+    - match: |-
+        (?x:
+          call|print|println|times|Scanner|package|com
+        ){{identifier_break}}
+      scope: support.function.builtin.fusion
+      pop: true
+
+    - include: builtin-modules
+
+  variable:
+    - match: '{{identifier}}{{function_assignment_ahead}}'
+      scope: entity.name.function.fusion
+      pop: true
+
+    - match: '{{identifier}}{{function_call_ahead}}'
+      scope: variable.function.fusion
+      pop: true
+
+    - match: '{{identifier}}'
+      scope: variable.other.fusion
+      pop: true
+
+  number:
+    - match: (0[Xx])\h*(?:\.\h*)?([Pp][-+]?\d*)?
+      scope: constant.numeric.hexadecimal.fusion
+      captures:
+        1: punctuation.definition.numeric.hexadecimal.fusion
+      pop: true
+
+    - match: \d+(?:\.\d*)?([Ee][-+]?\d*)?
+      scope: constant.numeric.decimal.fusion
+      pop: true
+
+  string:
+    - match: \'
+      scope: punctuation.definition.string.begin.fusion
+      set:
+        - meta_include_prototype: false
+        - meta_scope: string.quoted.single.fusion
+        - include: string-content
+        - match: \'
+          scope: punctuation.definition.string.end.fusion
+          pop: true
+
+    - match: \"
+      scope: punctuation.definition.string.begin.fusion
+      set:
+        - meta_include_prototype: false
+        - meta_scope: string.quoted.double.fusion
+        - include: string-content
+        - match: \"
+          scope: punctuation.definition.string.end.fusion
+          pop: true
+
+    - match: \[(=*)\[
+      scope: punctuation.definition.string.begin.fusion
+      set:
+        - meta_scope: string.quoted.multiline.fusion
+        - meta_include_prototype: false
+        - match: \]\1\]
+          scope: punctuation.definition.string.end.fusion
+          pop: true
+
+  string-content:
+    - match: \\[abfnrtv\\'"\[\]\n]
+      scope: constant.character.escape.fusion
+
+    - match: \\x\h\h
+      scope: constant.character.escape.hexadecimal.fusion
+
+    - match: \\\d{1,3}
+      scope: constant.character.escape.decimal.fusion
+
+    - match: \\u\{\h+\}
+      scope: constant.character.escape.unicode.fusion
+
+    - match: \\z
+      push:
+        - meta_scope: constant.character.escape.whitespace.fusion
+        - include: else-pop
+
+    - match: \n
+      scope: invalid.illegal.unclosed-string.fusion
+      pop: true
+    - match: \\.
+      scope: invalid.illegal.invalid-escape.fusion
+
+  parenthesized-expression:
+    - match: \(
+      scope: punctuation.section.group.begin.fusion
+      set:
+        - meta_scope: meta.group.fusion
+        - match: \)
+          scope: punctuation.section.group.end.fusion
+          pop: true
+        - match: (?=\S)
+          push: expression
+
+  table-constructor:
+    - match: \{
+      scope: punctuation.section.block.begin.fusion
+      set:
+        - meta_scope: meta.mapping.fusion
+        - match: \}
+          scope: punctuation.section.block.end.fusion
+          pop: true
+
+        - match: '[,;]'
+          scope: punctuation.separator.field.fusion
+
+        - match: \[
+          scope: punctuation.section.brackets.begin.fusion
+          push:
+            - meta_scope: meta.brackets.fusion
+            - match: \]
+              scope: punctuation.section.brackets.end.fusion
+              pop: true
+            - match: (?=\S)
+              push: expression
+
+        - match: '{{identifier}}(?=\s*=)'
+          scope: meta.key.fusion string.unquoted.key.fusion
+
+        - match: =
+          scope: punctuation.separator.key-value.fusion
+          push: expression
+
+        - match: (?=\S)
+          push: expression
+
+  function-literal:
+    - match: function{{identifier_break}}
+      scope: storage.type.function.fusion
+      set:
+        - function-meta
+        - block-contents
+        - function-parameter-list
+        - function-name
+
+  function-meta:
+    - meta_scope: meta.function.fusion
+    - include: immediately-pop
