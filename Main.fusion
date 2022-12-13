@@ -4,10 +4,10 @@ package main
     
     
 namespace Main
-    function main(args) : void
+	function main(args) : void
 		String msg = "Hello world"
 		println msg
-    end
+	end
         
 endnamespace    
     
