@@ -1,0 +1,15 @@
+
+package main
+@import fusion.std
+    
+    
+namespace Main
+    function setup() : void
+
+    end
+    function loop() : void
+
+    end
+        
+endnamespace    
+    

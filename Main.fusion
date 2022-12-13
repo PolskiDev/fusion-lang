@@ -1,0 +1,13 @@
+
+package main
+@import fusion.std
+    
+    
+namespace Main
+    function main(args) : void
+		String msg = "Hello world"
+		println msg
+    end
+        
+endnamespace    
+    

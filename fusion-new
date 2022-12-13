@@ -1,0 +1,126 @@
+#!/usr/bin/node
+const fs = require('fs')
+const process = require('process')
+const { execSync, exec } = require("child_process");
+const { platform } = require('os');
+const path = require('path')
+/* fusionc -c <program>.fusion */
+
+let execution_mode
+let createfile
+let optional_parameter
+
+if (process.argv.length > 3) {
+    createfile = process.argv[3];
+    execution_mode = process.argv[2];
+    optional_parameter = process.argv[4]
+}
+
+
+/* Built-in libraries */
+function BuiltInLibs() {
+    let res = ``
+    return res;
+}
+
+/* Fusion Manpage */
+function Manpage() {
+    console.log("\n                   FUSION-INO (Arduino)                ")
+    console.log("------------------------------------------------------------------")
+    console.log("New Arduino C++ Project:        fusion-new --arduino <program>.fusion")
+    console.log("------------------------------------------------------------------\n")
+    console.log("New Fusion JVM Project:         fusion-new --jvm <program>.fusion")
+    console.log("------------------------------------------------------------------\n")
+    console.log("New Fusion Native Project:      fusion-new --native <program>.fusion")
+    console.log("------------------------------------------------------------------\n")
+    console.log("New Fusion Web Project:         fusion-new --web <program>.fusion")
+    console.log("------------------------------------------------------------------\n\n")
+    console.log("Fusion Project Manager - Gabriel Margarido (Nightly - 181)\n\n")
+}
+
+/* Compile source-code */
+function Arduino() {
+    fs.writeFileSync(createfile,`
+package main
+@import fusion.std
+    
+    
+namespace Main
+    function setup() : void
+
+    end
+    function loop() : void
+
+    end
+        
+endnamespace    
+    
+`)
+}
+
+function JVM() {
+    fs.writeFileSync(createfile,`
+package main
+@import fusion.std
+    
+    
+namespace Main
+    function main(args) : void
+        String msg = "Hello world"
+        println msg
+    end
+        
+endnamespace    
+    
+`)
+}
+
+function Native() {
+    fs.writeFileSync(createfile,`
+package main
+@import fusion.std
+    
+    
+namespace Main
+    function main(args) : void
+        String msg = "Hello world"
+        println msg
+    end
+        
+endnamespace    
+    
+`)
+}
+
+function Web() {
+    fs.writeFileSync(createfile,`
+package main
+@import fusion.std
+    
+    
+namespace Main
+    function main(args) : void
+        String msg = "Hello world"
+        println msg
+    end
+        
+endnamespace    
+    
+`)
+}
+
+if (process.argv.length > 3) {
+    if (execution_mode == "--arduino") {
+        Arduino()
+    } else if (execution_mode == "--jvm") {
+        JVM()
+    } else if (execution_mode == "--native") {
+        Native()
+    } else if (execution_mode == "--web") {
+        Web()
+    } else {
+        Manpage()
+    }
+} else {
+    Manpage()
+}
