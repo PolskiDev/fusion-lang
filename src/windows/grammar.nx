@@ -1,0 +1,7 @@
+FUNCTION CALLS:
+<function>     <identifier>    <args>
+stack[i-2]     stack[i-1]      stack[i]
+
+FUNCTION CALLS WITH RETURN:
+<function>     <identifier>    <args>       :               <typeof>    <variable>
+stack[i-2]     stack[i-1]      stack[i]     stack[i+1]      stack[i+2]  stack[i+3]

@@ -44,7 +44,7 @@ package main
 @import fusion.std
     
     
-namespace Main
+namespace ${createfile.slice(0,createfile.indexOf('.'))}
     function setup() : void
 
     end
@@ -63,7 +63,7 @@ package main
 @import fusion.std
     
     
-namespace Main
+namespace ${createfile.slice(0,createfile.indexOf('.'))}
     function main(args) : void
         String msg = "Hello world"
         println msg
@@ -80,7 +80,7 @@ package main
 @import fusion.std
     
     
-namespace Main
+namespace ${createfile.slice(0,createfile.indexOf('.'))}
     function main(args) : void
         String msg = "Hello world"
         println msg
@@ -97,7 +97,7 @@ package main
 @import fusion.std
     
     
-namespace Main
+namespace ${createfile.slice(0,createfile.indexOf('.'))}
     function main(args) : void
         String msg = "Hello world"
         println msg

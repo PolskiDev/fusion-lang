@@ -227,20 +227,17 @@ function compile() {
                 fs.appendFileSync(outputFile,res)
             }
 
-            if(stack[i] == 'call') {
-                let funcname = stack[i+1]
-                let args = stack[i+2]
-
-                //args = args.replace('int::','int ')
-                //args = args.replace('float::','float ')
-                //args = args.replace('String::','String ')
-                //args = args.replace('bool::','boolean ')
-                //args = args.replace('void::','void ')
-                args = args.replace('::',' ')
+            /* Function call based on parenthesis
+            <function> <identifier><params>
+            ~= <identifier><params> */
+            if(stack[i].slice(0,1) == '('
+            && stack[i-1].match(/[A-Za-z0-9]/) && stack[i-2] == undefined) {
+                let funcname = stack[i-1]
+                let args = stack[i]
 
                 if (stack.length > 3) {
-                    let return_vartype = stack[i+4]
-                    let return_varname = stack[i+5]
+                    let return_vartype = stack[i+2]
+                    let return_varname = stack[i+3]
 
                     return_vartype = return_vartype.replace('int','int')
                     return_vartype = return_vartype.replace('float','float')
