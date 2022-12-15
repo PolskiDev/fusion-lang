@@ -232,7 +232,7 @@ function compile() {
             <function> <identifier><params>
             ~= <identifier><params> */
             if(stack[i].slice(0,1) == '('
-            && stack[i-1].match(/[A-Za-z0-9_]/) && stack[i-2] == undefined) {
+            && stack[i-1].match(/[A-Za-z0-9]/) && stack[i-2] == undefined) {
                 let funcname = stack[i-1]
                 let args = stack[i]
 
