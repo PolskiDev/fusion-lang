@@ -165,9 +165,11 @@ function ClearJava(java) {
 }
 function ManifestFusion(java,package) {
     if (process.platform == 'win32') {
+        //execSync('gzip -cvr '+package.replace("--ar=",'')+' > '+java.replace(".fusion",FUSION_JAR_EXTENSION))//+' && del /f '+java)
         execSync('tar -czvf '+java.replace(".fusion",FUSION_JAR_EXTENSION)+' '+package.replace("--ar=",''))//+' && del /f '+java)
         //os.system(f'zip -r '+java+'.'+FUSION_JAR_EXTENSION+' '+java)
     } else {
+        //execSync('gzip -cvr '+package.replace("--ar=",'')+' > '+java.replace(".fusion",FUSION_JAR_EXTENSION))//+' && del /f '+java)
         execSync('tar -czvf '+java.replace(".fusion",FUSION_JAR_EXTENSION)+' '+package.replace("--ar=",''))//+' && rm -Rf '+java)
         //os.system(f'zip -r '+java+'.'+FUSION_JAR_EXTENSION+' '+java)
     }
