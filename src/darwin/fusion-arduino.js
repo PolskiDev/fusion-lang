@@ -1,3 +1,4 @@
+
 const fs = require('fs')
 const process = require('process')
 const { execSync, exec } = require("child_process");
@@ -102,6 +103,8 @@ function compile() {
                 let vartype = stack[i-2]
                 let varname = stack[i-1]
                 let value = stack[i+1]
+
+                
                 let optional_parameter = stack[i+2]
                 vartype = vartype.replace('int','int')
                 vartype = vartype.replace('float','float')
@@ -136,17 +139,16 @@ function compile() {
                         let res = `${vartype} ${varname} = ${value.slice(1,-1)};\n`
                         fs.appendFileSync(outputFile,res)
                     } else {
-                        //var res 
-                        //if (optional_parameter.slice(0,1) == '(') {
-                        if (optional_parameter != undefined) {
-                            res = `${vartype} ${varname} = ${value}${optional_parameter};\n`
+                        if (value == 'undefined') {
+                            res = `${vartype} ${varname};\n`
                         } else {
-                            res = `${vartype} ${varname} = ${value};\n`
+                            if (optional_parameter != undefined) {
+                                res = `${vartype} ${varname} = ${value}${optional_parameter};\n`
+                            } else {
+                                res = `${vartype} ${varname} = ${value};\n`
+                            }
                         }
                         
-                        //} else {
-                            //res = `let ${varname}: ${vartype} = ${value};\n`
-                        //}
                         fs.appendFileSync(outputFile,res)
                     }
                 }

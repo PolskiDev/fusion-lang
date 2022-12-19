@@ -1,3 +1,4 @@
+
 const fs = require('fs')
 const process = require('process')
 const { execSync, exec } = require("child_process");
@@ -269,39 +270,68 @@ function compile() {
             if (stack[i] == '=') {
                 let vartype = stack[i-2]
                 let varname = stack[i-1]
-                let value = stack[i+1]
+                let value
+                let optional_parameter
 
-                vartype = vartype.replace('int','int')
-                vartype = vartype.replace('float','float')
-                vartype = vartype.replace('String','String')
-                vartype = vartype.replace('bool','boolean')
-                vartype = vartype.replace('void','void')
+                /* It has value for variable */
+                if (stack[i+1] != 'undefined') {
+                    value = stack[i+1]
+                    optional_parameter = stack[i+2]
 
-                //if vartype == 'Integer' or varname == 'Double' or varname == 'String' or varname == 'Boolean':
-                if (vartype.includes('[]')) {
-                    vartype = vartype.replace('int[]','int[]')
-                    vartype = vartype.replace('float[]','float[]')
-                    vartype = vartype.replace('String[]','String[]')
-                    vartype = vartype.replace('bool[]','boolean[]')
 
-                    let res = `${vartype} ${varname} = {${value.slice(1,-1)}};\n`
-                    fs.appendFileSync(outputFile,res)
-                } else if (vartype.includes('{}')) {
-                    vartype = vartype.replace('Int{}','Integer')
-                    vartype = vartype.replace('Float{}','Float')
-                    vartype = vartype.replace('String{}','String')
-                    vartype = vartype.replace('Bool{}','Boolean')
+                    vartype = vartype.replace('int','int')
+                    vartype = vartype.replace('float','float')
+                    vartype = vartype.replace('String','String')
+                    vartype = vartype.replace('bool','boolean')
+                    vartype = vartype.replace('void','void')
 
-                    let res = `ArrayList<${vartype}> ${varname} = new ArrayList<${vartype}>(${value.slice(1,-1)});\n`
-                    fs.appendFileSync(outputFile,res)
+                    //if vartype == 'Integer' or varname == 'Double' or varname == 'String' or varname == 'Boolean':
+                    if (vartype.includes('[]')) {
+                        vartype = vartype.replace('int[]','int[]')
+                        vartype = vartype.replace('float[]','float[]')
+                        vartype = vartype.replace('String[]','String[]')
+                        vartype = vartype.replace('bool[]','boolean[]')
 
+                        let res = `${vartype} ${varname} = {${value.slice(1,-1)}};\n`
+                        fs.appendFileSync(outputFile,res)
+                    
+                    } else if (vartype.includes('{}')) {
+                        vartype = vartype.replace('Int{}','Integer')
+                        vartype = vartype.replace('Float{}','Float')
+                        vartype = vartype.replace('String{}','String')
+                        vartype = vartype.replace('Bool{}','Boolean')
+
+                        let res = `ArrayList<${vartype}> ${varname} = new ArrayList<${vartype}>(${value.slice(1,-1)});\n`
+                        fs.appendFileSync(outputFile,res)
+
+                    } else {
+                        if (vartype == 'expression') {
+                            vartype = vartype.replace('expression','float')
+                            let res = `${vartype} ${varname} = ${value.slice(1,-1)};\n`
+                            fs.appendFileSync(outputFile,res)
+                        } else {
+                            /* Float values 'f' handling */
+                            if (vartype == 'float') { value = value+'f' }
+                            
+                            let res
+                            if (optional_parameter != undefined) {
+                                res = `${vartype} ${varname} = ${value}${optional_parameter};\n`
+                            } else {
+                                res = `${vartype} ${varname} = ${value};\n`
+                            }
+                            fs.appendFileSync(outputFile,res)
+                        }
+                    }
+                /* It does not have value for variable */
                 } else {
                     if (vartype == 'expression') {
                         vartype = vartype.replace('expression','float')
-                        let res = `${vartype} ${varname} = ${value.slice(1,-1)};\n`
+                        let res = `${vartype} ${varname};\n`
                         fs.appendFileSync(outputFile,res)
                     } else {
-                        let res = `${vartype} ${varname} = ${value};\n`
+                        /* Float values 'f' handling */
+                        if (vartype == 'float') { value = value+'f' }
+                        let res = `${vartype} ${varname};\n`
                         fs.appendFileSync(outputFile,res)
                     }
                 }
@@ -342,7 +372,7 @@ function compile() {
                 let funcname = stack[i+1]
                 let args = stack[i+2]
                 let delim = stack[i+3]
-
+                
                 if(funcname == 'main') {
                     args = args.replace('args','String[] args')
                 }
@@ -363,12 +393,19 @@ function compile() {
                 functype = functype.replace('bool','boolean')
                 functype = functype.replace('void','void')
 
-                
                 if(delim == ":") {
-                    if(funcname == 'actionPerformed') {
+                    /* Dynamic and overriding function */
+                    if(stack[i-1] != undefined && stack[i-1] == 'override') {
+                        let res = `\n@Override\npublic ${functype} ${funcname}${args} {\n`
+                        fs.appendFileSync(outputFile,res)
+                    }
+                    /* Dynamic function without overriding function */
+                    else if(stack[i-1] != undefined && stack[i-1] == 'dynamic') {
                         let res = `public ${functype} ${funcname}${args} {\n`
                         fs.appendFileSync(outputFile,res)
-                    } else {
+                    } 
+                    /* Static function without overriding */
+                    else {
                         let res = `public static ${functype} ${funcname}${args} {\n`
                         fs.appendFileSync(outputFile,res)
                     }

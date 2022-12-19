@@ -1,3 +1,4 @@
+
 const fs = require('fs')
 const process = require('process')
 const { execSync, exec } = require("child_process");
@@ -152,20 +153,22 @@ function compile() {
                 } else {
                     if (vartype == 'expression') {
                         vartype = vartype.replace('expression','float')
-                        let res = `let ${varname}: ${vartype} = ${value.slice(1,-1)};\n`
+                        if (value != 'undefined') {
+                            let res = `let ${varname}: ${vartype} = ${value.slice(1,-1)};\n`
+                        } else if (value == 'undefined') {
+                            let res = `let ${varname}: ${vartype};\n`
+                        }
                         fs.appendFileSync(outputFile,res)
                     } else {
                         //var res 
                         //if (optional_parameter.slice(0,1) == '(') {
                         if (optional_parameter != undefined) {
                             res = `let ${varname}: ${vartype} = ${value}${optional_parameter};\n`
-                        } else {
+                        } else if (optional_parameter == undefined && value != 'undefined') {
                             res = `let ${varname}: ${vartype} = ${value};\n`
+                        } else if (optional_parameter == undefined && value == 'undefined') {
+                            res = `let ${varname}: ${vartype};\n`
                         }
-                        
-                        //} else {
-                            //res = `let ${varname}: ${vartype} = ${value};\n`
-                        //}
                         fs.appendFileSync(outputFile,res)
                     }
                 }

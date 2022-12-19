@@ -89,6 +89,17 @@ contexts:
     - match: int{{identifier_break}}
       scope: storage.modifier.fusion
 
+    - match: undefined{{identifier_break}}
+      scope: storage.modifier.fusion
+
+    - match: override{{identifier_break}}
+      scope: storage.modifier.fusion
+
+    - match: dynamic{{identifier_break}}
+      scope: storage.modifier.fusion
+
+
+
     - match: float{{identifier_break}}
       scope: storage.modifier.fusion
 

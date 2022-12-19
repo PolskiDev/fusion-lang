@@ -1,7 +1,21 @@
-FUNCTION CALLS:
+FUNCTION CALLS (included _):
 <function>     <identifier>    <args>
 stack[i-2]     stack[i-1]      stack[i]
 
-FUNCTION CALLS WITH RETURN:
+FUNCTION CALLS WITH RETURN (included _):
 <function>     <identifier>    <args>       :               <typeof>    <variable>
 stack[i-2]     stack[i-1]      stack[i]     stack[i+1]      stack[i+2]  stack[i+3]
+
+
+FUNCTION DEFINITION (OVERRIDE/DYNAMIC):
+<modifier>   function    <identifier>    <args>           :        <typeof>
+stack[i-1]   stack[i]    stack[i+1]      stack[i+2]   stack[i+3]   stack[i+4]
+
+
+INITIALIZED VARIABLE:
+<typeof>        <identifier>     =           <value>
+stack[i-2]      stack[i-1]     stack[i]     stack[i+1]
+
+NON- INITIALIZED VARIABLE:
+<typeof>        <identifier>     =           <undefined>
+stack[i-2]      stack[i-1]     stack[i]     stack[i+1]
